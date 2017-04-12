@@ -5,14 +5,18 @@
 # For circle.yml explanation, see: https://circleci.com/docs/manually
 # Python specific configuration, see: https://circleci.com/docs/language-python
 #####
+machine:
+  python:
+    version: 2.7.6
+    version: 3.5.3
+    version: pypy-2.3.1
 dependencies:
-    pre:
+    override:
         - sudo apt-get update
-        - sudo make venv-deps
-        - make update
-        - cd openzwave && make && cd ..
-        - make venv2
-        - make venv3
+        - sudo make ci-deps
+        - make openzwave.gzip
+        - sudo make buildso
+        - echo "Don't need to install setup.py"
 test:
     override:
-        - make venv-autobuild-tests
+        - make venv-continuous-autobuild-tests

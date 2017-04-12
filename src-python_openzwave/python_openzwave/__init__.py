@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-This file is part of **python-openzwave** project https://github.com/OpenZWave/python-openzwave.
-    :platform: Unix, Windows, MacOS X
-    :sinopsis: openzwave API
+__license__ = """
 
-.. moduleauthor: bibi21000 aka Sébastien GALLET <bibi21000@gmail.com>
+This file is part of **python-openzwave** project https://github.com/OpenZWave/python-openzwave.
 
 License : GPL(v3)
 
@@ -19,18 +16,13 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with python-openzwave. If not, see http://www.gnu.org/licenses.
-
 """
-pyozw_version = '0.4.0.7'
-if "-" in pyozw_version:
-    pyozw_version_short = pyozw_version.split("-")
-else:
-    pyozw_version_short = pyozw_version
+__copyright__ = "Copyright © 2012-2015 Sébastien GALLET aka bibi21000"
+__author__ = 'Sébastien GALLET aka bibi21000'
+__email__ = 'bibi21000@gmail.com'
 
-if __name__ == '__main__':
-    import sys
-    if len(sys.argv)>1 and sys.argv[1]=="--major":
-        print(pyozw_version_short)
-    else:
-        print(pyozw_version)
-
+try:
+    __import__('pkg_resources').declare_namespace("python_openzwave")
+except:
+    # bootstrapping
+    pass
