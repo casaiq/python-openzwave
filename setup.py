@@ -30,7 +30,6 @@ Build process :
     --pybind : use pybind alternative (not tested)
     --auto (default) : try static, shared and cython, fails if it can't
 """
-
 from setuptools import setup, find_packages
 from distutils.extension import Extension
 from pyozw_version import pyozw_version
@@ -45,28 +44,47 @@ print(current_template.ctx)
 print(install_requires())
 
 setup(
-  name = 'libopenzwave',
+  name = 'python_openzwave',
   author='Sébastien GALLET aka bibi2100 <bibi21000@gmail.com>',
   author_email='bibi21000@gmail.com',
   version = pyozw_version,
   zip_safe = False,
   url='https://github.com/OpenZWave/python-openzwave',
-  cmdclass = {'build_ext': current_template.build_ext,
+  cmdclass = {
+        'build_ext': current_template.build_ext,
         'bdist_egg': bdist_egg,
         'build': build,
         'build_openzwave': build_openzwave,
         'openzwave_config': openzwave_config,
         'clean': clean,
         'develop': develop,
-        'install': install},
+        'install': install
+        },
   ext_modules = [
         Extension(**current_template.ctx)
     ],
   #ext_modules = cythonize(ext_modules),
-  package_dir = {'' : 'src-lib'},
+  package_dir = {'libopenzwave' : 'src-lib', 'python_openzwave' : 'src-python_openzwave/python_openzwave', 'openzwave' : 'src-api/openzwave'},
   #The following line install config drectory in share/python-openzwave
   #~ data_files = data_files,
-  packages = find_packages('src-lib', exclude=["scripts"]),
+  packages = find_packages('src-lib', exclude=["scripts"]) + find_packages('src-api', exclude=["scripts"]) + find_packages('src-python_openzwave', exclude=["scripts"]),
   install_requires = install_requires(),
+  description = 'python_openzwave is a python wrapper for the openzwave c++ library.',
+  long_description = 'A full API to map the ZWave network in Python objects. Look at examples at : https://github.com/OpenZWave/python-openzwave',
+  download_url = 'https://raw.githubusercontent.com/OpenZWave/python-openzwave/master/archives/python_openzwave-{0}.zip'.format(pyozw_version),
+  keywords = [ 'openzwave', 'zwave' ],
+  classifiers = [
+    "Topic :: Home Automation",
+    "Topic :: System :: Hardware",
+    "Topic :: System :: Hardware :: Hardware Drivers",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: POSIX :: BSD",
+    "Programming Language :: C++",
+    "Programming Language :: Cython",
+    "Programming Language :: Python :: 2",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    ],
 )
-
