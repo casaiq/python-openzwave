@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-.. module:: ozwsh
+.. module:: pyozw_shell
 
 This file is part of **python-openzwave** project https://github.com/OpenZWave/python-openzwave.
     :platform: Unix, Windows, MacOS X
@@ -42,7 +42,7 @@ signal.signal(signal.SIGINT, signal_term_handler)
 
 def main():
     parser = optparse.OptionParser(
-        usage="ozwsh [--device=/dev/ttyUSB0] [--log=Debug] ...")
+        usage="pyozw_shell [--device=/dev/ttyUSB0] [--log=Debug] ...")
 
     parser.add_option(
         '-d', '--device',

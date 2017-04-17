@@ -30,21 +30,25 @@ Build process :
     --pybind : use pybind alternative (not tested)
     --auto (default) : try static, shared and cython, fails if it can't
 """
-from os import name as os_name
+import time
 import os, sys
+from os import name as os_name
 import re
 import shutil
 import setuptools
 from setuptools import setup, find_packages
 from distutils.extension import Extension
+from distutils.spawn import find_executable
 from distutils import log
-from distutils.command.install import install as _install
+from setuptools.command.install import install as _install
 from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from setuptools.command.bdist_egg import bdist_egg as _bdist_egg
 from setuptools.command.develop import develop as _develop
-from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
-import time
+try:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+except ImportError:
+    log.warn("ImportError in : from wheel.bdist_wheel import bdist_wheel as _bdist_wheel")   
 from platform import system as platform_system
 import glob
 
@@ -63,7 +67,7 @@ def get_default_exts ():
          "extra_objects": [ ],
          "extra_compile_args": [ ],
          "extra_link_args": [ ],
-         "language": "c++"
+         "language": "c++",
        }
     return exts
 
@@ -107,6 +111,9 @@ def pybind_context():
 
 def system_context(ctx, openzwave=None, static=False):
     #System specific section
+    #~ os.environ["CC"] = "gcc" 
+    #~ os.environ["CXX"] = "g++"
+    #~ os.environ["PKG_CONFIG_PATH"] = "PKG_CONFIG_PATH:/usr/local/lib/x86_64-linux-gnu/pkgconfig/"
     if static:
         ctx['include_dirs'] += [ 
             "{0}/cpp/src".format(openzwave), 
@@ -122,7 +129,7 @@ def system_context(ctx, openzwave=None, static=False):
             import pyozw_pkgconfig
             ctx['libraries'] += [ "openzwave" ]
             extra = pyozw_pkgconfig.cflags('libopenzwave')
-            for ssubstitute in ['/', '/value_classes/', '/platform/', '/windows/']:
+            for ssubstitute in ['/', '/value_classes/', '/platform/']:
                 ctx['extra_compile_args'] += [ extra.replace('//', ssubstitute) ]
 
     elif sys.platform == "darwin":
@@ -136,7 +143,7 @@ def system_context(ctx, openzwave=None, static=False):
             import pyozw_pkgconfig
             ctx['libraries'] += [ "openzwave" ]
             extra = pyozw_pkgconfig.cflags('libopenzwave')
-            for ssubstitute in ['/', '/value_classes/', '/platform/', '/mac/']:
+            for ssubstitute in ['/', '/value_classes/', '/platform/']:
                 ctx['extra_compile_args'] += [ extra.replace('//', ssubstitute) ]
             
     elif sys.platform == "freebsd":
@@ -148,7 +155,7 @@ def system_context(ctx, openzwave=None, static=False):
             import pyozw_pkgconfig
             ctx['libraries'] += [ "openzwave" ]
             extra = pyozw_pkgconfig.cflags('libopenzwave')
-            for ssubstitute in ['/', '/value_classes/', '/platform/', '/linux/']:
+            for ssubstitute in ['/', '/value_classes/', '/platform/']:
                 ctx['extra_compile_args'] += [ extra.replace('//', ssubstitute) ]
  
     elif sys.platform[:5] == "linux":
@@ -160,7 +167,7 @@ def system_context(ctx, openzwave=None, static=False):
             import pyozw_pkgconfig
             ctx['libraries'] += [ "openzwave" ]
             extra = pyozw_pkgconfig.cflags('libopenzwave')
-            for ssubstitute in ['/', '/value_classes/', '/platform/', '/linux/']:
+            for ssubstitute in ['/', '/value_classes/', '/platform/']:
                 ctx['extra_compile_args'] += [ extra.replace('//', ssubstitute) ]
     else:
         # Unknown systemm
@@ -170,19 +177,25 @@ def system_context(ctx, openzwave=None, static=False):
 
 class Template(object):
     
-    def __init__(self, openzwave=None, cleanopzw=False):
+    def __init__(self, openzwave=None, cleanopzw=False, sysargv=None, flavor=None):
         self.openzwave = openzwave
         self._ctx = None
         self.cleanopzw = cleanopzw
+        self.flavor = flavor
+        self.sysargv = sysargv
    
     @property
     def ctx(self):
         if self._ctx is None:
+            if 'install' in sys.argv or 'develop' in sys.argv or 'bdist_egg' in sys.argv:
+                current_template.install_minimal_dependencies()
             self._ctx = self.get_context()
         return self._ctx
 
     @property
     def build_ext(self):
+        if 'install' in sys.argv or 'develop' in sys.argv or 'bdist_egg' in sys.argv:
+            current_template.install_minimal_dependencies()
         from Cython.Distutils import build_ext as _build_ext
         return _build_ext
    
@@ -195,7 +208,10 @@ class Template(object):
         return False
 
     def install_requires(self):
-        return ['cython']
+        return ['Cython']
+        
+    def build_requires(self):
+        return ['Cython']
         
     def build(self):
         if len(self.ctx['extra_objects']) == 1 and os.path.isfile(self.ctx['extra_objects'][0]):
@@ -296,18 +312,17 @@ class Template(object):
                     if identifier == 'STDERR':
                         sys.stderr.write('{0}\n'.format(line))
                         log.error('{0}\n'.format(line))
-
         if sys.platform == "win32":
-            proc = Popen(['make', 'install'], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
+            proc = Popen([ 'make', 'install' ], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
                 
         elif sys.platform == "darwin":
-            proc = Popen(['make', 'install'], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
+            proc = Popen([ 'make', 'install' ], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
                 
         elif sys.platform == "freebsd":
-            proc = Popen(['make', 'install'], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
+            proc = Popen([ 'make', 'install' ], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
                 
         elif sys.platform[:5] == "linux":
-            proc = Popen(['make', 'install'], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
+            proc = Popen([ 'make', 'install' ], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
         else:
             # Unknown systemm
             raise RuntimeError("Can't detect plateform")
@@ -317,11 +332,42 @@ class Template(object):
         Thread(target=stream_watcher, name='stderr-watcher',
                 args=('STDERR', proc.stderr)).start()
 
-        printer = Thread(target=printer, name='printer')
-        printer.start()
-        while printer.is_alive():
+        tprinter = Thread(target=printer, name='printer')
+        tprinter.start()
+        while tprinter.is_alive():
             time.sleep(1)
-        printer.join()
+        tprinter.join()
+        try:
+            import pyozw_pkgconfig
+            lib = pyozw_pkgconfig.libs_only_l('libopenzwave')
+            ldpath = lib[2:]
+            if sys.platform == "win32":
+                proc = Popen([ 'ldconfig', ldpath ], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
+                    
+            elif sys.platform == "darwin":
+                proc = Popen([ 'ldconfig', ldpath ], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
+                    
+            elif sys.platform == "freebsd":
+                proc = Popen([ 'ldconfig', ldpath ], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
+                    
+            elif sys.platform[:5] == "linux":
+                proc = Popen([ 'ldconfig', ldpath ], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
+            else:
+                # Unknown systemm
+                raise RuntimeError("Can't detect plateform")
+
+            Thread(target=stream_watcher, name='stdout-watcher',
+                    args=('STDOUT', proc.stdout)).start()
+            Thread(target=stream_watcher, name='stderr-watcher',
+                    args=('STDERR', proc.stderr)).start()
+
+            tprinter = Thread(target=printer, name='printer')
+            tprinter.start()
+            while tprinter.is_alive():
+                time.sleep(1)
+            tprinter.join()
+        except Exception:
+            log.info("Can't launch ldconfig")
         return True
 
     def clean(self):
@@ -411,14 +457,37 @@ class Template(object):
                     shutil.rmtree(os.path.join(dirn, f))
         return self.clean()
 
+    def check_minimal_config(self):
+        log.info("Found g++ : {0}".format(find_executable("g++")))
+        log.info("Found gcc : {0}".format(find_executable("gcc")))
+        exe = find_executable("pkg-config")
+        log.info("Found pkg-config : {0}".format(exe))
+        if exe is not None:
+            import pyozw_pkgconfig
+            for lib in self.ctx['libraries'] + ['yaml-0.1', 'libopenzwave', 'python', 'python2', 'python3']:
+                log.info("Found library {0} : {1}".format(lib, pyozw_pkgconfig.exists(lib)))
+        
     def install_minimal_dependencies(self):
+        if len(self.build_requires()) == 0:
+            return
         import pip
-        for pyreq in install_requires():
+        try:
+            log.info("Get installed packages")
             try:
-                log.info("Install minimal dependencies {0}".format(pyreq))
-                pip.main(['install', pyreq])
+                packages = pip.utils.get_installed_distributions()
             except Exception:
-                log.error("Fail to install minimal dependencies {0}".format(pyreq))
+                packages = []
+            for pyreq in self.build_requires():
+                if pyreq not in packages:
+                    try:
+                        log.info("Install minimal dependencies {0}".format(pyreq))
+                        pip.main(['install', pyreq])
+                    except Exception:
+                        log.warn("Fail to install minimal dependencies {0}".format(pyreq))
+                else:
+                    log.info("Minimal dependencies already installed {0}".format(pyreq))
+        except Exception:
+            log.warn("Can't get package list from pip.")
         
     def get_openzwave(self, url='https://codeload.github.com/OpenZWave/open-zwave/zip/master'):
         #Get openzwave
@@ -453,10 +522,20 @@ class Template(object):
         zip_ref.extractall(dest)
         zip_ref.close()
         return self.openzwave
+
+    def clean_openzwave_so(self):
+        for path in ['/usr/local/etc/openzwave', '/usr/local/include/openzwave', '/usr/local/share/doc/openzwave']:
+            try:
+                log.info('Try to remove {0}'.format('/usr/local/etc/openzwave'))
+                shutil.rmtree(os.path.abspath(self.openzwave))
+            except Exception:
+                pass
+        return True
         
 class DevTemplate(Template):
-    def __init__(self, openzwave=None, cleanopzw=False):
-        Template.__init__(self, openzwave='openzwave', cleanopzw=cleanopzw)
+    
+    def __init__(self, **args):
+        Template.__init__(self, **args)
 
     def get_context(self):
         opzw_dir = LOCAL_OPENZWAVE
@@ -468,7 +547,7 @@ class DevTemplate(Template):
         self.openzwave = opzw_dir
         ctx = cython_context()
         if ctx is None:
-            log.error("Can't find cython")
+            log.error("Can't find Cython")
             return None
         ctx = system_context(ctx, openzwave=opzw_dir, static=True)
         return ctx
@@ -477,13 +556,14 @@ class DevTemplate(Template):
         return True
 
 class GitTemplate(Template):
-    def __init__(self, openzwave=None, cleanopzw=False):
-        Template.__init__(self, openzwave=os.path.join("openzwave-git", 'open-zwave-master'), cleanopzw=cleanopzw)
+    
+    def __init__(self, **args):
+        Template.__init__(self, openzwave=os.path.join("openzwave-git", 'open-zwave-master'), **args)
 
     def get_context(self):
         ctx = cython_context()
         if ctx is None:
-            log.error("Can't find cython")
+            log.error("Can't find Cython")
             return None
         ctx = system_context(ctx, openzwave=self.openzwave, static=True)
         return ctx
@@ -515,10 +595,19 @@ class GitSharedTemplate(GitTemplate):
     def get_context(self):
         ctx = cython_context()
         if ctx is None:
-            log.error("Can't find cython")
+            log.error("Can't find Cython")
             return None
         ctx = system_context(ctx, openzwave=self.openzwave, static=False)
+        extra = '-I/usr/local/include/openzwave//'
+        for ssubstitute in ['/', '/value_classes/', '/platform/']:
+            incl = extra.replace('//', ssubstitute)
+            if not incl in ctx['extra_compile_args']:
+                ctx['extra_compile_args'] += [ incl ]
         return ctx
+
+    @property
+    def copy_openzwave_config(self):
+        return False
 
     @property
     def install_openzwave_so(self):
@@ -527,23 +616,20 @@ class GitSharedTemplate(GitTemplate):
     def get_openzwave(self, url='https://codeload.github.com/OpenZWave/open-zwave/zip/master'):
         return Template.get_openzwave(self, url)
 
-    def clean_all(self):
-        ret = GitTemplate.clean(self)
-        #We should remove headers, so modules and configuration files
-        for path in ['/usr/local/etc/openzwave', '/usr/local/include/openzwave', '/usr/local/share/doc/openzwave']:
-            try:
-                log.info('Try to remove {0}'.format('/usr/local/etc/openzwave'))
-                shutil.rmtree(os.path.abspath(self.openzwave))
-            except Exception:
-                pass
-        return ret
+    def clean(self):
+        self.clean_openzwave_so()
+        return GitTemplate.clean(self)
 
 class EmbedTemplate(Template):
-    def __init__(self, openzwave=None, cleanopzw=False):
-        Template.__init__(self, openzwave=os.path.join("openzwave-embed", 'open-zwave-master'), cleanopzw=cleanopzw)
+    
+    def __init__(self, **args):
+        Template.__init__(self, openzwave=os.path.join("openzwave-embed", 'open-zwave-master'), **args)
 
     @property
     def build_ext(self):
+        if 'install' in sys.argv or 'develop' in sys.argv:
+            current_template.check_minimal_config()
+            current_template.install_minimal_dependencies()
         from distutils.command.build_ext import build_ext as _build_ext
         return _build_ext
 
@@ -553,6 +639,9 @@ class EmbedTemplate(Template):
         return ctx
 
     def install_requires(self):
+        return []
+
+    def build_requires(self):
         return []
 
     def get_openzwave(self, url='https://raw.githubusercontent.com/OpenZWave/python-openzwave/master/archives/open-zwave-master-{0}.zip'.format(pyozw_version)):
@@ -584,14 +673,41 @@ class EmbedTemplate(Template):
                 pass
         return ret
         
+class EmbedSharedTemplate(EmbedTemplate):
+
+    def get_context(self):
+        ctx = cpp_context()
+        ctx = system_context(ctx, openzwave=self.openzwave, static=False)
+        extra = '-I/usr/local/include/openzwave//'
+        for ssubstitute in ['/', '/value_classes/', '/platform/']:
+            incl = extra.replace('//', ssubstitute)
+            if not incl in ctx['extra_compile_args']:
+                ctx['extra_compile_args'] += [ incl ]
+        return ctx
+
+    def clean(self):
+        self.clean_openzwave_so()
+        return EmbedTemplate.clean(self)
+
+    @property
+    def copy_openzwave_config(self):
+        return False
+
+    @property
+    def install_openzwave_so(self):
+        return True
+
+    def get_openzwave(self, url='https://codeload.github.com/OpenZWave/open-zwave/zip/master'):
+        return Template.get_openzwave(self, url)        
+        
 class SharedTemplate(Template):
-    def __init__(self, openzwave=None, cleanopzw=False):
-        Template.__init__(self, openzwave=openzwave, cleanopzw=cleanopzw)
+    def __init__(self,  **args):
+        Template.__init__(self, **args)
 
     def get_context(self):
         ctx = cython_context()
         if ctx is None:
-            log.error("Can't find cython")
+            log.error("Can't find Cython")
             return None
         ctx = system_context(ctx, static=False)
         return ctx
@@ -607,27 +723,37 @@ class SharedTemplate(Template):
         return True
 
 def parse_template(sysargv):
-    tmpl = EmbedTemplate()
-    if '--dev' in sysargv:
-        index = sysargv.index('--dev')
-        sysargv.pop(index)
-        tmpl =  DevTemplate()
-    elif '--git' in sysargv:
-        index = sysargv.index('--git')
-        sysargv.pop(index)
-        tmpl =  GitTemplate()
-    elif '--git_shared' in sysargv:
-        index = sysargv.index('--git_shared')
-        sysargv.pop(index)
-        tmpl =  GitSharedTemplate()
-    elif '--embed' in sysargv:
-        index = sysargv.index('--embed')
-        sysargv.pop(index)
-        tmpl =  EmbedTemplate()
-    elif '--shared' in sysargv:
-        index = sysargv.index('--shared')
-        sysargv.pop(index)
-        tmpl =  SharedTemplate()
+    tmpl = None
+    flavor = None
+    if '--flavor=dev' in sysargv:
+        index = sysargv.index('--flavor=dev')
+        flavor = sysargv.pop(index)
+        tmpl =  DevTemplate(sysargv=sysargv)  
+    elif '--flavor=git' in sysargv:
+        index = sysargv.index('--flavor=git')
+        flavor = sysargv.pop(index)
+        tmpl =  GitTemplate(sysargv=sysargv)  
+    elif '--flavor=git_shared' in sysargv:
+        index = sysargv.index('--flavor=git_shared')
+        flavor = sysargv.pop(index)
+        tmpl =  GitSharedTemplate(sysargv=sysargv)
+    elif '--flavor=embed' in sysargv:
+        index = sysargv.index('--flavor=embed')
+        flavor = sysargv.pop(index)
+        tmpl =  EmbedTemplate(sysargv=sysargv)
+    elif '--flavor=embed_shared' in sysargv:
+        index = sysargv.index('--flavor=embed_shared')
+        flavor = sysargv.pop(index)
+        tmpl =  EmbedSharedTemplate(sysargv=sysargv)
+    elif '--flavor=shared' in sysargv:
+        index = sysargv.index('--flavor=shared')
+        flavor = sysargv.pop(index)
+        tmpl =  SharedTemplate(sysargv=sysargv)
+    if tmpl is None:
+        #Default template
+        flavor = 'embed'
+        tmpl = EmbedTemplate(sysargv=sysargv)
+    tmpl.flavor = flavor
     if '--cleanopzw' in sysargv:
         index = sysargv.index('--cleanopzw')
         sysargv.pop(index)
@@ -643,7 +769,6 @@ def install_requires():
     else:
          pkgs.append('Louie>=1.1')
     pkgs += current_template.install_requires()
-    #~ print('Found install_requires {0}'.format(pkgs))
     return pkgs
 
 def get_dirs(base):
@@ -665,6 +790,8 @@ def data_files_config(target, source, pattern):
 
 class bdist_egg(_bdist_egg):
     def run(self):
+        build_openzwave = self.distribution.get_command_obj('build_openzwave')
+        build_openzwave.develop = True
         self.run_command('build_openzwave')
         _bdist_egg.run(self)
 
@@ -674,10 +801,13 @@ class build_openzwave(setuptools.Command):
     user_options = [
         ('openzwave-dir=', None,
          'the source directory where openzwave sources should be stored'),
+        ('flavor=', None,
+         'the flavor of python_openzwave to install'),
     ]
     
     def initialize_options(self):
         self.openzwave_dir = None
+        self.flavor = None
     
     def finalize_options(self):
         if self.openzwave_dir is None:
@@ -687,9 +817,10 @@ class build_openzwave(setuptools.Command):
                 build = self.distribution.get_command_obj('build')
                 build.ensure_finalized()
                 self.openzwave_dir = os.path.join(build.build_lib, current_template.openzwave)
-    
+        self.flavor = current_template.flavor
+        
     def run(self):
-        current_template.install_minimal_dependencies()
+        current_template.check_minimal_config()
         current_template.get_openzwave()
         current_template.build()
         if current_template.install_openzwave_so:
@@ -727,11 +858,17 @@ class openzwave_config(setuptools.Command):
 class build(_build):
     sub_commands = [('build_openzwave', None)] + _build.sub_commands
 
-class bdist_wheel(_bdist_wheel):
-    def run(self):
-        self.run_command('build_openzwave')
-        #~ self.run_command('openzwave_config')
-        _bdist_wheel.run(self)
+try:
+    class bdist_wheel(_bdist_wheel):
+        def run(self):
+            build_openzwave = self.distribution.get_command_obj('build_openzwave')
+            build_openzwave.develop = True
+            self.run_command('build_openzwave')
+            _bdist_wheel.run(self)
+except NameError:
+    log.warn("NameError in : class bdist_wheel(_bdist_wheel) - Use bdist_egg instead")
+    class bdist_wheel(bdist_egg):
+        pass
 
 class clean(_clean):
     def run(self):
@@ -742,17 +879,50 @@ class clean(_clean):
         _clean.run(self)      
 
 class develop(_develop):
+    description = 'De velop python_openzwave'
+    
+    user_options = _develop.user_options + [
+        ('flavor=', None, 'the flavor of python_openzwave to install'),
+    ]
+    
+    def initialize_options(self):
+        self.flavor = None
+        return _develop.initialize_options(self)
+    
+    def finalize_options(self):
+        if self.flavor is None:
+            self.flavor = current_template.flavor
+        log.info('flavor {0}'.format(self.flavor))
+        return _develop.finalize_options(self)
+        
     def run(self):
-        build_openzwave = self.distribution.get_command_obj('build_openzwave')
-        build_openzwave.develop = True
-        self.run_command('build_openzwave')
+        #In case of --uninstall, it will build openzwave to remove it ... stupid.
+        #In develop mode, build is donr by the makefile
+        #~ build_openzwave = self.distribution.get_command_obj('build_openzwave')
+        #~ build_openzwave.develop = True
+        #~ self.run_command('build_openzwave')
         _develop.run(self)
 
 class install(_install):
+    description = 'Install python_openzwave'
+    
+    user_options = _install.user_options + [
+        ('flavor=', None, 'the flavor of python_openzwave to install'),
+    ]
+    
+    def initialize_options(self):
+        self.flavor = None
+        return _install.initialize_options(self)
+    
+    def finalize_options(self):
+        if self.flavor is None:
+            self.flavor = current_template.flavor
+        log.info('flavor {0}'.format(self.flavor))
+        return _install.finalize_options(self)
+        
     def run(self):
         build_openzwave = self.distribution.get_command_obj('build_openzwave')
         build_openzwave.develop = True
         self.run_command('build_openzwave')
         self.run_command('openzwave_config')
         _install.run(self)
-

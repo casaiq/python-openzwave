@@ -34,10 +34,16 @@ python-openzwave is a python wrapper for the openzwave c++ library : https://git
 python-openzwave 0.4.0 is coming !!!
 ====================================
  
- - 0.4.0.x versions are for testers only. Don't use it in a production environement
+ - 0.4.0.x versions are for testers only. Don't use it in a production environement !!!
  
  - New installation process via pip
  
+ - First, you need some build tools and libs. On ubuntu, you should use :
+
+     .. code-block:: bash
+
+        sudo apt-get install --force-yes -y build-essential libudev-dev g++ libyaml-dev
+
  - Make your virtualenv and activate it : 
  
     .. code-block:: bash
@@ -45,7 +51,14 @@ python-openzwave 0.4.0 is coming !!!
         virtualenv --python=python3 venv3
         source venv3/bin/activate
 
- - There is a bug in the package dependencies, on some systems it fails. You need to install them manualy :
+ - Install the default (embed) flavor :       
+ 
+    .. code-block:: bash
+    
+        (venvX) pip install python_openzwave
+    
+ - The previous command install python_openzwave statitically linked to sources downloaded from https://github.com/OpenZWave/python-openzwave/tree/master/archives.
+   You can change this using flavors. There is a bug in the package dependencies and flavors on some systems. You may need to install dependencies manualy :
  
   - on python 2.7 :
   
@@ -60,45 +73,118 @@ python-openzwave 0.4.0 is coming !!!
   
         (venvX) pip install cython wheel six
         (venvX) pip install 'PyDispatcher>=2.0.5'
+
+ - Choose your flavor :
+ 
+    - embed : the default one. Download sources from https://github.com/OpenZWave/python-openzwave/tree/master/archives and
+      build them. Python_openzwave is statically build using a cythonized version of libopenzwave. No need to install cython.
+    - shared : if you have install openzwave as module manually, you can link python_openzwave to it.
+    - git : download sources from openzwave github and link statically to it.
+    - embed_shared (experimental) : download sources from https://github.com/OpenZWave/python-openzwave/tree/master/archives, build and install as module on the system. 
+      Python_openzwave use it. Need root access to install openzwave libs.
+    - git_shared (experimental) : download sources from openzwave github, build and install them as module on the system.
+      Python_openzwave use it. Need root access to install openzwave libs.
+    - dev : for python_openzwave developpers
+
    
- - Install the git flavor,(venvX)       
+ - Install it :
  
     .. code-block:: bash
     
-        (venvX) pip install ---egg python_openzwave --install-option="--git"
+        (venvX) pip install python_openzwave --install-option="--flavor=git"
 
-    To use fresh code from openzwave github :
-
-    .. code-block:: bash
-    
-        (venvX) pip install --egg python_openzwave --force --install-option="--git --cleanopzw"
-
-- If you have build and install openzwave your self, use the dynamic linking :
-
-    .. code-block:: bash
-    
-        (venvX) pip install -egg python_openzwave --force --install-option="--shared"
-
-- On tiny many machines, you can use the embed method. It will download a small archive of openzwave from python-openzwave github. 
-It also contains a cythonised version of libopenzwave, so it don't need cython anymore :
-
-    .. code-block:: bash
-        (venvX) pip install wheel six
-        (venvX) pip install 'Louie>=1.1'    
-        (venvX) pip install --egg python_openzwave --force --install-option="--embed"
-
-    You can update to the last version of python_openzwave using :
+- You can update to the last version of openzwave using the git flavor :
         
     .. code-block:: bash
     
-        (venvX) pip install wheel six
-        (venvX) pip install 'PyDispatcher>=2.0.5'
-        (venvX) pip install --egg python_openzwave --force --install-option="--git --cleanopzw"
+        (venvX) pip uninstall -y python_openzwave
+        (venvX) pip install python_openzwave --no-cache-dir --install-option="--flavor=git"
+        
+    
+- At last, you can launch pyozw_check:
+
+    If no usb stick is connected to the machine, launch :
+
+    .. code-block:: bash
+
+        (venvX) pyozw_check
+
+    If you've one, use it for advanced checks : 
+    
+    .. code-block:: bash
+
+        (venvX) pyozw_check -i -d /dev/ttyUSB0
+
+    .. code-block:: bash
+    
+        -------------------------------------------------------------------------------
+        Import libs
+        Try to import libopenzwave
+        Try to get options
+        Try to destroy options
+        Try to import openzwave (API)
+        -------------------------------------------------------------------------------
+        Intialize device /dev/ttyUSB0
+        Try to get options
+        Try to get manager
+        2017-04-12 16:41:29.329 Always, OpenZwave Version 1.4.2497 Starting Up
+        Try to add watcher
+        ...
+        2017-04-12 16:44:05.880 Always, ***************************************************************************
+        2017-04-12 16:44:05.880 Always, *********************  Cumulative Network Statistics  *********************
+        2017-04-12 16:44:05.880 Always, *** General
+        2017-04-12 16:44:05.880 Always, Driver run time: . .  . 0 days, 0 hours, 1 minutes
+        2017-04-12 16:44:05.880 Always, Frames processed: . . . . . . . . . . . . . . . . . . . . 27
+        2017-04-12 16:44:05.880 Always, Total messages successfully received: . . . . . . . . . . 27
+        2017-04-12 16:44:05.880 Always, Total Messages successfully sent: . . . . . . . . . . . . 19
+        2017-04-12 16:44:05.880 Always, ACKs received from controller:  . . . . . . . . . . . . . 19
+        2017-04-12 16:44:05.880 Always, *** Errors
+        2017-04-12 16:44:05.880 Always, Unsolicited messages received while waiting for ACK:  . . 0
+        2017-04-12 16:44:05.880 Always, Reads aborted due to timeouts:  . . . . . . . . . . . . . 0
+        2017-04-12 16:44:05.880 Always, Bad checksum errors:  . . . . . . . . . . . . . . . . . . 0
+        2017-04-12 16:44:05.880 Always, CANs received from controller:  . . . . . . . . . . . . . 0
+        2017-04-12 16:44:05.880 Always, NAKs received from controller:  . . . . . . . . . . . . . 0
+        2017-04-12 16:44:05.880 Always, Out of frame data flow errors:  . . . . . . . . . . . . . 0
+        2017-04-12 16:44:05.880 Always, Messages retransmitted: . . . . . . . . . . . . . . . . . 0
+        2017-04-12 16:44:05.880 Always, Messages dropped and not delivered: . . . . . . . . . . . 0
+        2017-04-12 16:44:05.880 Always, ***************************************************************************
+        2017-04-12 16:44:07.887 Info, mgr,     Driver for controller /dev/ttyUSB0 removed
+        Try to remove watcher
+        Try to destroy manager
+        Try to destroy options
     
 
-Support for windows, macosx, ... is not tested. Feel free to report bug and patches. We can easely support these plateforms.
+- The old manager is now available via the pyozw_shell command. You need to install module "urwid>=1.1.1" with pip before using it.
 
-Old installation process is deprecated and reserved for python-openzwave-developers and alternatives machines.
+- libopenzwave and openzwave python modules are packaged in the python_openzwave. 
+  So developpers needs to update their install_requires (it works fine with pyozw_manager). 
+  They can use the following code to update softly :
+
+    .. code-block:: python
+    
+        pyozw_version='0.4.1'
+    
+        def install_requires():
+            try:
+                import python_openzwave
+                return ['python_openzwave==%s' % pyozw_version]
+            except ImportError:
+                pass
+            try:
+                import libopenzwave
+                return ['openzwave==%s' % pyozw_version]
+            except ImportError:
+                pass
+            return ['python_openzwave == %s' % pyozw_version]
+
+
+- If you already have an 0.3.x version installed, you should update your installation as usual. Don't install it with pip as it can break your installation (maybe not if you don't remove old modules)
+
+- Support for windows, macosx, ... is not tested. Feel free to report bug and patches. We can try to support these plateforms. Don't have Windows at home so I can't help. Same for mac.
+
+- Old installation process is deprecated and reserved for python-openzwave-developers and alternatives machines.
+
+- Please report your successful installations here : https://github.com/OpenZWave/python-openzwave/issues/73
 
 python-openzwave 0.3.0 is out !!!
 =================================
@@ -122,7 +208,8 @@ A lot of project tasks are done automatically or with makefile, so they must be 
 
 Migrating from python-openzwave 0.2.X to 0.3.0
 ==============================================
-I need to update source tree of python-openzwave and modules's names because of a bug in setuptools : https://bitbucket.org/pypa/setuptools/issue/230/develop-mode-does-not-respect-src .
+I need to update source tree of python-openzwave and modules's names because of a bug in setuptools 
+: https://bitbucket.org/pypa/setuptools/issue/230/develop-mode-does-not-respect-src .
 Sorry for that.
 
 Update your sources:
