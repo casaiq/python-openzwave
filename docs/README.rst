@@ -84,6 +84,7 @@ python-openzwave 0.4.0 is coming !!!
       Python_openzwave use it. Need root access to install openzwave libs.
     - git_shared (experimental) : download sources from openzwave github, build and install them as module on the system.
       Python_openzwave use it. Need root access to install openzwave libs.
+    - ozwdev and ozwdev_shared : use the dev branch of openzwave on github.
     - dev : for python_openzwave developpers
 
    
@@ -93,7 +94,7 @@ python-openzwave 0.4.0 is coming !!!
     
         (venvX) pip install python_openzwave --install-option="--flavor=git"
 
-- You can update to the last version of openzwave using the git flavor :
+ - You can update to the last version of openzwave using the git flavor :
         
     .. code-block:: bash
     
@@ -101,15 +102,15 @@ python-openzwave 0.4.0 is coming !!!
         (venvX) pip install python_openzwave --no-cache-dir --install-option="--flavor=git"
         
     
-- At last, you can launch pyozw_check:
+ - At last, you can launch pyozw_check:
 
-    If no usb stick is connected to the machine, launch :
+   If no usb stick is connected to the machine, launch :
 
     .. code-block:: bash
 
         (venvX) pyozw_check
 
-    If you've one, use it for advanced checks : 
+   If you've one, use it for advanced checks : 
     
     .. code-block:: bash
 
@@ -120,8 +121,17 @@ python-openzwave 0.4.0 is coming !!!
         -------------------------------------------------------------------------------
         Import libs
         Try to import libopenzwave
+        Try to import libopenzwave.PyLogLevels
         Try to get options
-        Try to destroy options
+        Try to get manager
+        Try to get python_openzwave version
+        0.4.0.27
+        Try to get python_openzwave full version
+        python-openzwave version 0.4.0.27 (dev / Apr 18 2017 - 23:22:26)
+        Try to get openzwave version
+        1.4.2501
+        Try to get default config path
+        /etc/openzwave/
         Try to import openzwave (API)
         -------------------------------------------------------------------------------
         Intialize device /dev/ttyUSB0
@@ -154,11 +164,11 @@ python-openzwave 0.4.0 is coming !!!
         Try to destroy options
     
 
-- The old manager is now available via the pyozw_shell command. You need to install module "urwid>=1.1.1" with pip before using it.
+ - The old manager is now available via the pyozw_shell command. You need to install module "urwid>=1.1.1" with pip before using it.
 
-- libopenzwave and openzwave python modules are packaged in the python_openzwave. 
-  So developpers needs to update their install_requires (it works fine with pyozw_manager). 
-  They can use the following code to update softly :
+ - libopenzwave and openzwave python modules are packaged in the python_openzwave. 
+   So developpers needs to update their install_requires (it works fine with pyozw_manager). 
+   They can use the following code to update softly :
 
     .. code-block:: python
     
@@ -178,13 +188,13 @@ python-openzwave 0.4.0 is coming !!!
             return ['python_openzwave == %s' % pyozw_version]
 
 
-- If you already have an 0.3.x version installed, you should update your installation as usual. Don't install it with pip as it can break your installation (maybe not if you don't remove old modules)
+ - If you already have an 0.3.x version installed, you should update your installation as usual. Don't install it with pip as it can break your installation (maybe not if you don't remove old modules)
 
-- Support for windows, macosx, ... is not tested. Feel free to report bug and patches. We can try to support these plateforms. Don't have Windows at home so I can't help. Same for mac.
+ - Support for windows, macosx, ... is not tested. Feel free to report bug and patches. We can try to support these plateforms. Don't have Windows at home so I can't help. Same for mac.
 
-- Old installation process is deprecated and reserved for python-openzwave-developers and alternatives machines.
+ - Old installation process is deprecated and reserved for python-openzwave-developers and alternatives machines.
 
-- Please report your successful installations here : https://github.com/OpenZWave/python-openzwave/issues/73
+ - Please report your successful installations here : https://github.com/OpenZWave/python-openzwave/issues/73
 
 python-openzwave 0.3.0 is out !!!
 =================================

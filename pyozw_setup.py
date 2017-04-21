@@ -129,8 +129,9 @@ def system_context(ctx, openzwave=None, static=False):
             import pyozw_pkgconfig
             ctx['libraries'] += [ "openzwave" ]
             extra = pyozw_pkgconfig.cflags('libopenzwave')
-            for ssubstitute in ['/', '/value_classes/', '/platform/']:
-                ctx['extra_compile_args'] += [ extra.replace('//', ssubstitute) ]
+            if extra != '':
+                for ssubstitute in ['/', '/value_classes/', '/platform/']:
+                    ctx['extra_compile_args'] += [ extra.replace('//', ssubstitute) ]
 
     elif sys.platform == "darwin":
         ctx['extra_link_args'] += [ "-framework", "CoreFoundation", "-framework", "IOKit" ]
@@ -143,8 +144,9 @@ def system_context(ctx, openzwave=None, static=False):
             import pyozw_pkgconfig
             ctx['libraries'] += [ "openzwave" ]
             extra = pyozw_pkgconfig.cflags('libopenzwave')
-            for ssubstitute in ['/', '/value_classes/', '/platform/']:
-                ctx['extra_compile_args'] += [ extra.replace('//', ssubstitute) ]
+            if extra != '':
+                for ssubstitute in ['/', '/value_classes/', '/platform/']:
+                    ctx['extra_compile_args'] += [ extra.replace('//', ssubstitute) ]
             
     elif sys.platform == "freebsd":
         if static:
@@ -155,8 +157,9 @@ def system_context(ctx, openzwave=None, static=False):
             import pyozw_pkgconfig
             ctx['libraries'] += [ "openzwave" ]
             extra = pyozw_pkgconfig.cflags('libopenzwave')
-            for ssubstitute in ['/', '/value_classes/', '/platform/']:
-                ctx['extra_compile_args'] += [ extra.replace('//', ssubstitute) ]
+            if extra != '':
+                for ssubstitute in ['/', '/value_classes/', '/platform/']:
+                    ctx['extra_compile_args'] += [ extra.replace('//', ssubstitute) ]
  
     elif sys.platform[:5] == "linux":
         if static:
@@ -167,8 +170,9 @@ def system_context(ctx, openzwave=None, static=False):
             import pyozw_pkgconfig
             ctx['libraries'] += [ "openzwave" ]
             extra = pyozw_pkgconfig.cflags('libopenzwave')
-            for ssubstitute in ['/', '/value_classes/', '/platform/']:
-                ctx['extra_compile_args'] += [ extra.replace('//', ssubstitute) ]
+            if extra != '':
+                for ssubstitute in ['/', '/value_classes/', '/platform/']:
+                    ctx['extra_compile_args'] += [ extra.replace('//', ssubstitute) ]
     else:
         # Unknown systemm
         raise RuntimeError("Can't detect plateform")
@@ -177,10 +181,10 @@ def system_context(ctx, openzwave=None, static=False):
 
 class Template(object):
     
-    def __init__(self, openzwave=None, cleanopzw=False, sysargv=None, flavor=None):
+    def __init__(self, openzwave=None, cleanozw=False, sysargv=None, flavor=None):
         self.openzwave = openzwave
         self._ctx = None
-        self.cleanopzw = cleanopzw
+        self.cleanozw = cleanozw
         self.flavor = flavor
         self.sysargv = sysargv
    
@@ -190,6 +194,7 @@ class Template(object):
             if 'install' in sys.argv or 'develop' in sys.argv or 'bdist_egg' in sys.argv:
                 current_template.install_minimal_dependencies()
             self._ctx = self.get_context()
+            self.finalize_context(self._ctx)
         return self._ctx
 
     @property
@@ -207,6 +212,14 @@ class Template(object):
     def install_openzwave_so(self):
         return False
 
+    def finalize_context(self, ctx):
+        self.clean_cython()
+        if self.flavor:
+            ctx['define_macros'] += [('PY_LIB_FLAVOR', self.flavor.replace('--flavor=',''))]
+        else:
+            ctx['define_macros'] += [('PY_LIB_FLAVOR', self.flavor)]
+        return ctx
+        
     def install_requires(self):
         return ['Cython']
         
@@ -264,7 +277,7 @@ class Template(object):
             proc = Popen('make', stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
         else:
             # Unknown systemm
-            raise RuntimeError("Can't detect plateform")
+            raise RuntimeError("Can't detect plateform {0}".format(sys.platform))
 
         Thread(target=stream_watcher, name='stdout-watcher',
                 args=('STDOUT', proc.stdout)).start()
@@ -325,7 +338,7 @@ class Template(object):
             proc = Popen([ 'make', 'install' ], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
         else:
             # Unknown systemm
-            raise RuntimeError("Can't detect plateform")
+            raise RuntimeError("Can't detect plateform {0}".format(sys.platform))
 
         Thread(target=stream_watcher, name='stdout-watcher',
                 args=('STDOUT', proc.stdout)).start()
@@ -337,10 +350,10 @@ class Template(object):
         while tprinter.is_alive():
             time.sleep(1)
         tprinter.join()
+        log.info("ldconfig openzwave so ... be patient ...")
         try:
             import pyozw_pkgconfig
-            lib = pyozw_pkgconfig.libs_only_l('libopenzwave')
-            ldpath = lib[2:]
+            ldpath = pyozw_pkgconfig.libs_only_l('libopenzwave')[2:]
             if sys.platform == "win32":
                 proc = Popen([ 'ldconfig', ldpath ], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
                     
@@ -354,7 +367,7 @@ class Template(object):
                 proc = Popen([ 'ldconfig', ldpath ], stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
             else:
                 # Unknown systemm
-                raise RuntimeError("Can't detect plateform")
+                raise RuntimeError("Can't detect plateform {0}".format(sys.platform))
 
             Thread(target=stream_watcher, name='stdout-watcher',
                     args=('STDOUT', proc.stdout)).start()
@@ -368,6 +381,9 @@ class Template(object):
             tprinter.join()
         except Exception:
             log.info("Can't launch ldconfig")
+        time.sleep(2.5)
+        log.info("Openzwave so installed and loaded")
+        tprinter = None
         return True
 
     def clean(self):
@@ -424,18 +440,18 @@ class Template(object):
             proc = Popen('make clean', stdout=PIPE, stderr=PIPE, cwd='{0}'.format(self.openzwave))
         else:
             # Unknown systemm
-            raise RuntimeError("Can't detect plateform")
+            raise RuntimeError("Can't detect plateform {0}".format(sys.platform))
 
         Thread(target=stream_watcher, name='stdout-watcher',
                 args=('STDOUT', proc.stdout)).start()
         Thread(target=stream_watcher, name='stderr-watcher',
                 args=('STDERR', proc.stderr)).start()
 
-        printer = Thread(target=printer, name='printer')
-        printer.start()
-        while printer.is_alive():
+        tprinter = Thread(target=printer, name='printer')
+        tprinter.start()
+        while tprinter.is_alive():
             time.sleep(1)
-        printer.join()
+        tprinter.join()
         return True
 
     def clean_all(self):
@@ -493,10 +509,10 @@ class Template(object):
         #Get openzwave
         """download an archive to a specific location"""
         dest,tail = os.path.split(self.openzwave)
-        dest_file = os.path.join(dest, 'open-zwave-master.zip')
+        dest_file = os.path.join(dest, 'open-zwave.zip')
         if os.path.exists(self.openzwave):
-            if not self.cleanopzw:
-                log.info("Already have directory %s. Use it. Use --cleanopzw to clean it.", self.openzwave)
+            if not self.cleanozw:
+                log.info("Already have directory %s. Use it. Use --cleanozw to clean it.", self.openzwave)
                 return self.openzwave
             else:
                 log.info("Already have directory %s but remove and clean it as asked", self.openzwave)
@@ -531,6 +547,12 @@ class Template(object):
             except Exception:
                 pass
         return True
+        
+    def clean_cython(self):
+        try:
+            os.remove('src-lib/libopenzwave/libopenzwave.cpp')
+        except Exception:
+            pass
         
 class DevTemplate(Template):
     
@@ -598,6 +620,8 @@ class GitSharedTemplate(GitTemplate):
             log.error("Can't find Cython")
             return None
         ctx = system_context(ctx, openzwave=self.openzwave, static=False)
+        while '' in ctx['extra_compile_args']:
+            ctx['extra_compile_args'].remove('')
         extra = '-I/usr/local/include/openzwave//'
         for ssubstitute in ['/', '/value_classes/', '/platform/']:
             incl = extra.replace('//', ssubstitute)
@@ -613,12 +637,23 @@ class GitSharedTemplate(GitTemplate):
     def install_openzwave_so(self):
         return True
 
-    def get_openzwave(self, url='https://codeload.github.com/OpenZWave/open-zwave/zip/master'):
-        return Template.get_openzwave(self, url)
-
     def clean(self):
         self.clean_openzwave_so()
         return GitTemplate.clean(self)
+
+class OzwdevTemplate(GitTemplate):
+    
+    def __init__(self, **args):
+        Template.__init__(self, openzwave=os.path.join("openzwave-git", 'open-zwave-Dev'), **args)
+    
+    def get_openzwave(self, url='https://codeload.github.com/OpenZWave/open-zwave/zip/Dev'):
+        return Template.get_openzwave(self, url)
+
+
+class OzwdevSharedTemplate(GitSharedTemplate):
+    
+    def get_openzwave(self, url='https://codeload.github.com/OpenZWave/open-zwave/zip/Dev'):
+        return Template.get_openzwave(self, url)
 
 class EmbedTemplate(Template):
     
@@ -645,8 +680,10 @@ class EmbedTemplate(Template):
         return []
 
     def get_openzwave(self, url='https://raw.githubusercontent.com/OpenZWave/python-openzwave/master/archives/open-zwave-master-{0}.zip'.format(pyozw_version)):
-        return Template.get_openzwave(self, url)
-
+        ret =  Template.get_openzwave(self, url)
+        shutil.copyfile(os.path.join(self.openzwave,'python-openzwave','openzwave.vers.cpp'), os.path.join(self.openzwave,'cpp','src','vers.cpp'))
+        return ret
+        
     def clean(self):
         ret = Template.clean(self)
         try:
@@ -678,6 +715,8 @@ class EmbedSharedTemplate(EmbedTemplate):
     def get_context(self):
         ctx = cpp_context()
         ctx = system_context(ctx, openzwave=self.openzwave, static=False)
+        while '' in ctx['extra_compile_args']:
+            ctx['extra_compile_args'].remove('')
         extra = '-I/usr/local/include/openzwave//'
         for ssubstitute in ['/', '/value_classes/', '/platform/']:
             incl = extra.replace('//', ssubstitute)
@@ -696,9 +735,6 @@ class EmbedSharedTemplate(EmbedTemplate):
     @property
     def install_openzwave_so(self):
         return True
-
-    def get_openzwave(self, url='https://codeload.github.com/OpenZWave/open-zwave/zip/master'):
-        return Template.get_openzwave(self, url)        
         
 class SharedTemplate(Template):
     def __init__(self,  **args):
@@ -737,6 +773,14 @@ def parse_template(sysargv):
         index = sysargv.index('--flavor=git_shared')
         flavor = sysargv.pop(index)
         tmpl =  GitSharedTemplate(sysargv=sysargv)
+    elif '--flavor=ozwdev' in sysargv:
+        index = sysargv.index('--flavor=ozwdev')
+        flavor = sysargv.pop(index)
+        tmpl =  OzwdevTemplate(sysargv=sysargv)  
+    elif '--flavor=ozwdev_shared' in sysargv:
+        index = sysargv.index('--flavor=ozwdev_shared')
+        flavor = sysargv.pop(index)
+        tmpl =  OzwdevSharedTemplate(sysargv=sysargv)
     elif '--flavor=embed' in sysargv:
         index = sysargv.index('--flavor=embed')
         flavor = sysargv.pop(index)
@@ -754,10 +798,10 @@ def parse_template(sysargv):
         flavor = 'embed'
         tmpl = EmbedTemplate(sysargv=sysargv)
     tmpl.flavor = flavor
-    if '--cleanopzw' in sysargv:
-        index = sysargv.index('--cleanopzw')
+    if '--cleanozw' in sysargv:
+        index = sysargv.index('--cleanozw')
         sysargv.pop(index)
-        tmpl.cleanopzw = True
+        tmpl.cleanozw = True
     return tmpl
     
 current_template = parse_template(sys.argv)
@@ -794,7 +838,7 @@ class bdist_egg(_bdist_egg):
         build_openzwave.develop = True
         self.run_command('build_openzwave')
         _bdist_egg.run(self)
-
+        
 class build_openzwave(setuptools.Command):
     description = 'download an build openzwave'
     
