@@ -45,7 +45,7 @@ print(install_requires())
 
 setup(
   name = 'python_openzwave',
-  author='Sébastien GALLET aka bibi2100 <bibi21000@gmail.com>',
+  author='Sébastien GALLET aka bibi2100',
   author_email='bibi21000@gmail.com',
   version = pyozw_version,
   zip_safe = False,
@@ -95,4 +95,5 @@ setup(
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     ],
+
 )
