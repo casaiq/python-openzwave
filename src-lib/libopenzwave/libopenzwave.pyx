@@ -58,6 +58,7 @@ import os
 import sys
 import warnings
 import six
+from shutil import copyfile
 
 # Set default logging handler to avoid "No handler found" warnings.
 import logging
@@ -76,6 +77,7 @@ from pkg_resources import get_distribution, DistributionNotFound
 cdef extern from 'pyversion.h':
     string PY_LIB_VERSION_STRING
     string PY_LIB_FLAVOR_STRING
+    string PY_LIB_BACKEND_STRING
     string PY_LIB_DATE_STRING
     string PY_LIB_TIME_STRING
 
@@ -326,6 +328,7 @@ PyOptionList = {
     'NotifyOnDriverUnload' : {'doc' : "Should we send the Node/Value Notifications on Driver Unloading - Read comments in Driver::~Driver() method about possible race conditions.", 'type' : "Bool"},
     'SecurityStrategy' : {'doc' : "Should we encrypt CC's that are available via both clear text and Security CC?.", 'type' : "String", 'value' : 'SUPPORTED'},
     'CustomSecuredCC' : {'doc' : "What List of Custom CC should we always encrypt if SecurityStrategy is CUSTOM.", 'type' : "String", 'value' : '0x62,0x4c,0x63'},
+    'EnforceSecureReception' : {'doc' : "If we recieve a clear text message for a CC that is Secured, should we drop the message", 'type' : "Bool"},
 }
 
 PyStatDriver = {
@@ -737,6 +740,11 @@ cdef class PyOptions:
         :see: areLocked_
 
         """
+        if not os.path.isfile(os.path.join(self._user_path,'options.xml')):
+            if os.path.isfile(os.path.join(self._config_path,'options.xml')):
+                copyfile(os.path.join(self._config_path,'options.xml'), os.path.join(self._user_path,'options.xml'))
+            else:
+                logger.warning("Can't find options.xml in %s"%self._config_path)
         return self.options.Lock()
 
     def areLocked(self):
@@ -1054,7 +1062,7 @@ sleeping) have been polled, an "AllNodesQueried" notification is sent.
         0x5A: 'COMMAND_CLASS_DEVICE_RESET_LOCALLY',
         0x5B: 'COMMAND_CLASS_CENTRAL_SCENE',
         0x5E: 'COMMAND_CLASS_ZWAVE_PLUS_INFO',
-        0x60: 'COMMAND_CLASS_MULTI_CHANNEL_V2',
+        0x60: 'COMMAND_CLASS_MULTI_INSTANCE/CHANNEL',
         0x61: 'COMMAND_CLASS_DISPLAY',
         0x62: 'COMMAND_CLASS_DOOR_LOCK',
         0x63: 'COMMAND_CLASS_USER_CODE',
@@ -1369,7 +1377,7 @@ Get the version of the python library.
 :see: getLibraryTypeName_, getLibraryVersion_, getOzwLibraryVersion_, getOzwLibraryLongVersion
 
         '''
-        return "python_openzwave version %s (%s / %s - %s)" % (PYLIBRARY, PY_LIB_FLAVOR_STRING, PY_LIB_DATE_STRING, PY_LIB_TIME_STRING)
+        return "python_openzwave version %s (%s-%s / %s - %s)" % (PYLIBRARY, PY_LIB_FLAVOR_STRING, PY_LIB_BACKEND_STRING, PY_LIB_DATE_STRING, PY_LIB_TIME_STRING)
 
     def getPythonLibraryVersionNumber(self):
         """
@@ -3341,6 +3349,24 @@ getValueType_, getValueInstance_, getValueIndex_
 .. _getValueAsString:
 
 Gets a value as a string.
+
+:param id: The ID of a value.
+:type id: int
+:return: The value
+:rtype: str
+:see: isValueSet_, getValue_, getValueAsBool_, getValueAsByte_, \
+getValueListSelectionStr_ , getValueListSelectionNum_, \
+getValueAsFloat_, getValueAsShort_, getValueAsInt_, getValueListItems_, \
+getValueType_, getValueInstance_, getValueIndex_
+
+        '''
+        return getValueFromType(self.manager,id)
+
+    def getValueAsRaw(self, id):
+        '''
+.. _getValueAsRaw:
+
+Gets a value as raw.
 
 :param id: The ID of a value.
 :type id: int
