@@ -669,7 +669,7 @@ venv-git-autobuild-tests: venv-clean venv2 venv3
 	venv2/bin/python setup-api.py install
 	venv2/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild
 	venv2/bin/python venv2/bin/pyozw_check
-	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(git /'
+	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(git-'
 
 	@echo
 	@echo ////////////////////////////////////////////////////////////////////////////////////////////
@@ -683,7 +683,7 @@ venv-git-autobuild-tests: venv-clean venv2 venv3
 	venv3/bin/python setup-api.py install
 	venv3/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild
 	venv3/bin/python  venv3/bin/pyozw_check	
-	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(git /'
+	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(git-'
 
 	@echo
 	@echo
@@ -713,7 +713,7 @@ venv-pypitest-autobuild-tests: venv-clean venv2 venv3
 	venv2/bin/pip install "urwid>=1.1.1"
 	venv2/bin/pip install -i https://testpypi.python.org/pypi -vvv python_openzwave
 	venv2/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild tests/manager/autobuild
-	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(embed /'
+	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(embed-'
 	venv2/bin/pip install "Cython"
 	venv2/bin/pip uninstall python_openzwave -y
 	venv2/bin/pip install -i https://testpypi.python.org/pypi -vvv python_openzwave --install-option="--flavor=git"
@@ -722,7 +722,7 @@ venv-pypitest-autobuild-tests: venv-clean venv2 venv3
 	venv2/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild tests/manager/autobuild
 	venv2/bin/python  venv2/bin/pyozw_check
 	venv2/bin/python  venv2/bin/pyozw_shell --help
-	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(git /'
+	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(git-'
 	venv2/bin/pip uninstall python_openzwave -y
 
 	@echo
@@ -737,7 +737,7 @@ venv-pypitest-autobuild-tests: venv-clean venv2 venv3
 	venv3/bin/pip install "urwid>=1.1.1"
 	venv3/bin/pip install -i https://testpypi.python.org/pypi -vvv python_openzwave
 	venv3/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild tests/manager/autobuild
-	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(embed /'
+	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(embed-'
 	venv3/bin/pip install "Cython"
 	venv3/bin/pip uninstall python_openzwave -y
 	venv3/bin/pip install -i https://testpypi.python.org/pypi -vvv python_openzwave --install-option="--flavor=git"
@@ -746,7 +746,7 @@ venv-pypitest-autobuild-tests: venv-clean venv2 venv3
 	venv3/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild tests/manager/autobuild
 	venv3/bin/python  venv3/bin/pyozw_check
 	venv3/bin/python  venv3/bin/pyozw_shell --help
-	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(git /'
+	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(git-'
 	venv3/bin/pip uninstall python_openzwave -y
 
 	-rm -f libopenzwave*.so
@@ -781,7 +781,7 @@ venv-pypilive-autobuild-tests: venv-clean
 	venv2/bin/pip install "urwid>=1.1.1"
 	venv2/bin/pip install "nose"
 	venv2/bin/pip install -vv python_openzwave
-	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(embed /'
+	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(embed-'
 	venv2/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild tests/manager/autobuild
 #~ 	venv2/bin/pip install Cython wheel
 	venv2/bin/pip install -vv python_openzwave --upgrade --install-option="--flavor=git"
@@ -789,7 +789,7 @@ venv-pypilive-autobuild-tests: venv-clean
 	venv2/bin/pip uninstall python_openzwave -y
 	venv2/bin/pip install -vv python_openzwave --upgrade --install-option="--flavor=git"
 	venv2/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild tests/manager/autobuild
-	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(git /'
+	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(git-'
 	venv2/bin/pip uninstall python_openzwave -y
 
 	@echo
@@ -808,7 +808,7 @@ venv-pypilive-autobuild-tests: venv-clean
 	venv3/bin/pip install "nose"
 	venv3/bin/pip install "urwid>=1.1.1"
 	venv3/bin/pip install -vv python_openzwave
-	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(embed /'
+	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(embed-'
 	venv3/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild tests/manager/autobuild
 #~ 	venv3/bin/pip install Cython wheel
 	venv3/bin/pip install -vv python_openzwave --upgrade --install-option="--flavor=git"
@@ -816,7 +816,7 @@ venv-pypilive-autobuild-tests: venv-clean
 	venv3/bin/pip uninstall python_openzwave -y
 	venv3/bin/pip install -vv python_openzwave --upgrade --install-option="--flavor=git"
 	venv3/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild tests/manager/autobuild
-	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(git /'
+	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(git-'
 	venv3/bin/pip uninstall python_openzwave -y
 
 	-rm -f libopenzwave*.so
@@ -854,7 +854,7 @@ venv-git_shared-autobuild-tests: venv-clean venv2 venv3
 	find /usr/local/etc/openzwave -iname device_classes.xml -type f -exec cat '{}' \;|grep open-zwave
 	test -f venv2/lib/python*/site-packages/libopenzwave*.so
 	venv2/bin/python  venv2/bin/pyozw_check
-	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(git_shared /'
+	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(git_shared-'
 	pkg-config --libs libopenzwave
 
 	@echo
@@ -872,7 +872,7 @@ venv-git_shared-autobuild-tests: venv-clean venv2 venv3
 	find /usr/local/etc/openzwave -iname device_classes.xml -type f -exec cat '{}' \;|grep open-zwave
 	test -f venv3/lib/python*/site-packages/libopenzwave*.so
 	venv3/bin/python  venv3/bin/pyozw_check
-	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(git_shared /'
+	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(git_shared-'
 	pkg-config --libs libopenzwave
 
 	@echo
@@ -907,7 +907,7 @@ venv-embed-autobuild-tests: venv-clean venv2 venv3
 	venv2/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild tests/manager/autobuild
 	test -f venv2/lib/python*/site-packages/libopenzwave*.so
 	venv2/bin/python  venv2/bin/pyozw_check	
-	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(embed /'
+	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(embed-'
 
 	@echo
 	@echo ////////////////////////////////////////////////////////////////////////////////////////////
@@ -925,7 +925,7 @@ venv-embed-autobuild-tests: venv-clean venv2 venv3
 	venv3/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild tests/manager/autobuild
 	test -f venv3/lib/python*/site-packages/libopenzwave*.so
 	venv3/bin/python  venv3/bin/pyozw_check	
-	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(embed /'
+	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(embed-'
 
 	-rm -f libopenzwave*.so
 	@echo
@@ -959,7 +959,7 @@ venv-embed_shared-autobuild-tests: venv-clean venv2 venv3
 	venv2/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild tests/manager/autobuild
 	test -f venv2/lib/python*/site-packages/libopenzwave*.so
 	venv2/bin/python  venv2/bin/pyozw_check	
-	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(embed_shared /'
+	venv2/bin/python venv2/bin/pyozw_check -o raw|grep '(embed_shared-'
 
 	@echo
 	@echo ////////////////////////////////////////////////////////////////////////////////////////////
@@ -976,7 +976,7 @@ venv-embed_shared-autobuild-tests: venv-clean venv2 venv3
 	venv3/bin/nosetests --verbose tests/lib/autobuild tests/api/autobuild tests/manager/autobuild
 	test -f venv3/lib/python*/site-packages/libopenzwave*.so
 	venv3/bin/python  venv3/bin/pyozw_check	
-	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(embed_shared /'
+	venv3/bin/python venv3/bin/pyozw_check -o raw|grep '(embed_shared-'
 
 	-rm -f libopenzwave*.so
 	@echo
