@@ -1,12 +1,15 @@
-FROM debian:jessie
+FROM ubuntu:latest
 MAINTAINER bibi21000 <bibi21000@gmail.com>
-ADD . /home/docker-py3
-WORKDIR /home/docker-py3
-RUN apt-get update && apt-get install -y make python3 sudo
-RUN make PYTHON_EXEC=python3 python-deps
-RUN make PYTHON_EXEC=python3 autobuild-deps
-RUN env
-RUN make PYTHON_EXEC=python3 update
-RUN make PYTHON_EXEC=python3 build
-RUN make PYTHON_EXEC=python3 install
-RUN make PYTHON_EXEC=python3 autobuild-tests
+ENV PYOZW_DOCKER 1
+ADD . /home/pyozw
+WORKDIR /home/pyozw
+RUN apt-get update && \
+    apt-get dist-upgrade -y && \
+    apt-get install -y make sudo
+RUN ls
+WORKDIR /home/pyozw/
+RUN make docker-deps
+RUN make openzwave.gzip
+RUN make venv-dev-autobuild-tests
+#RUN make venv-pypi-autobuild-tests
+RUN make venv-pypilive-autobuild-tests
