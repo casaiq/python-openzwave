@@ -49,7 +49,7 @@ setup(
   author_email='bibi21000@gmail.com',
   version = pyozw_version,
   zip_safe = False,
-  url='https://github.com/OpenZWave/python-openzwave',
+  url='https://github.com/casaiq/python-openzwave',
   cmdclass = {
         'build_ext': current_template.build_ext,
         'bdist_egg': bdist_egg,
@@ -79,7 +79,7 @@ setup(
   install_requires = install_requires(),
   description = 'python_openzwave is a python wrapper for the openzwave c++ library.',
   long_description = 'A full API to map the ZWave network in Python objects. Look at examples at : https://github.com/OpenZWave/python-openzwave',
-  download_url = 'https://raw.githubusercontent.com/OpenZWave/python-openzwave/master/archives/python_openzwave-{0}.zip'.format(pyozw_version),
+    download_url = 'https://github.com/casaiq/python-openzwave/archive/casaiq.zip',
   keywords = [ 'openzwave', 'zwave' ],
   classifiers = [
     "Topic :: Home Automation",
