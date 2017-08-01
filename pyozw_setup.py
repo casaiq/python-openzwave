@@ -745,6 +745,7 @@ class EmbedTemplate(Template):
 
     def get_openzwave(self, url='https://github.com/casaiq/open-zwave/archive/usercode.zip'):
         ret =  Template.get_openzwave(self, url)
+        shutil.copytree('bindings', os.path.join(self.openzwave, 'python-openzwave'))
         shutil.copyfile(os.path.join(self.openzwave,'python-openzwave','openzwave.vers.cpp'), os.path.join(self.openzwave,'cpp','src','vers.cpp'))
         return ret
         
