@@ -569,7 +569,7 @@ class Template(object):
         except Exception:
             log.warn("Can't get package list from pip.")
         
-    def get_openzwave(self, url='https://codeload.github.com/OpenZWave/open-zwave/zip/master'):
+    def get_openzwave(self, url='https://codeload.github.com/casaiq/open-zwave/zip/usercode'):
         #Get openzwave
         """download an archive to a specific location"""
         dest,tail = os.path.split(self.openzwave)
@@ -644,7 +644,7 @@ class DevTemplate(Template):
 class GitTemplate(Template):
     
     def __init__(self, **args):
-        Template.__init__(self, openzwave=os.path.join("openzwave-git", 'open-zwave-master'), **args)
+        Template.__init__(self, openzwave=os.path.join("openzwave-git", 'open-zwave-usercode'), **args)
 
     def get_context(self):
         ctx = cython_context()
@@ -654,7 +654,7 @@ class GitTemplate(Template):
         ctx = system_context(ctx, openzwave=self.openzwave, static=True)
         return ctx
 
-    def get_openzwave(self, url='https://codeload.github.com/OpenZWave/open-zwave/zip/master'):
+    def get_openzwave(self, url='https://codeload.github.com/casaiq/open-zwave/zip/usercode'):
         return Template.get_openzwave(self, url)
 
     def clean_all(self):
@@ -722,7 +722,7 @@ class OzwdevSharedTemplate(GitSharedTemplate):
 class EmbedTemplate(Template):
     
     def __init__(self, **args):
-        Template.__init__(self, openzwave=os.path.join("openzwave-embed", 'open-zwave-master'), **args)
+        Template.__init__(self, openzwave=os.path.join("openzwave-embed", 'open-zwave-usercode'), **args)
 
     @property
     def build_ext(self):
@@ -743,9 +743,9 @@ class EmbedTemplate(Template):
     def build_requires(self):
         return []
 
-    def get_openzwave(self, url='https://raw.githubusercontent.com/OpenZWave/python-openzwave/master/archives/open-zwave-master-{0}.zip'.format(pyozw_version)):
+    def get_openzwave(self, url='https://github.com/casaiq/open-zwave/archive/usercode.zip'):
         ret =  Template.get_openzwave(self, url)
-        shutil.copyfile(os.path.join(self.openzwave,'python-openzwave','openzwave.vers.cpp'), os.path.join(self.openzwave,'cpp','src','vers.cpp'))
+        shutil.copyfile(os.path.join(self.openzwave,'open-zwave-usercode','openzwave.vers.cpp'), os.path.join(self.openzwave,'cpp','src','vers.cpp'))
         return ret
         
     def clean(self):
@@ -819,7 +819,7 @@ class SharedTemplate(Template):
     def copy_openzwave_config(self):
         return False
 
-    def get_openzwave(self, url='https://codeload.github.com/OpenZWave/open-zwave/zip/master'):
+    def get_openzwave(self, url='https://codeload.github.com/casaiq/open-zwave/zip/usercode'):
         return True
 
 def parse_template(sysargv):
