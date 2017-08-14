@@ -88,7 +88,7 @@ def cpp_context():
         return None
     exts = get_default_exts()
     exts['define_macros'] += [('PY_SSIZE_T_CLEAN',1)]
-    exts['sources'] = ["openzwave-embed/open-zwave-master/python-openzwave/src-lib/libopenzwave/libopenzwave.cpp"]
+    exts['sources'] = ["openzwave-embed/open-zwave-usercode/python-openzwave/src-lib/libopenzwave/libopenzwave.cpp"]
     exts["include_dirs"] += [ "src-lib/libopenzwave/" ]
     return exts
 
